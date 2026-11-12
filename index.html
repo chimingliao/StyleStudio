@@ -1,0 +1,3253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VELL — Create a Character</title>
+<meta name="description" content="A full-screen virtual-character styling studio for creating and styling VELL characters.">
+<meta property="og:title" content="VELL — Create a Character">
+<meta property="og:description" content="A full-screen virtual-character styling studio for creating and styling VELL characters.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --glass: rgba(38,36,40,.30);
+  --glass-2: rgba(255,255,255,.10);
+  --line: rgba(255,255,255,.30);
+  --line-strong: rgba(255,255,255,.75);
+  --ink: #fff;
+  --ink-2: rgba(255,255,255,.72);
+  --ink-3: rgba(255,255,255,.5);
+  --glow: 0 0 0 1px rgba(255,255,255,.85), 0 0 18px rgba(255,255,255,.35);
+  --s: 1;
+  --bx: 0px;
+  --by: 0px;
+  --mx: 0px;
+  --build: 1;
+  --height: 1;
+  --real: none;
+  --bgReal: none;
+  --gradeFilter: none;
+  --tintBg: transparent;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: #cfd2d4;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: Figtree, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+}
+
+button {
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+
+.glass {
+  position: absolute;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+  backdrop-filter: blur(22px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 18px 40px -18px rgba(0,0,0,.35);
+}
+
+.pill-on {
+  box-shadow: var(--glow);
+  background: rgba(255,255,255,.14);
+}
+
+/* Scene */
+#scene {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+#grade {
+  position: absolute;
+  inset: -3%;
+  transition: filter .9s ease;
+}
+
+#bg {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transform: translate3d(var(--bx), var(--by), 0) scale(1.04);
+  transition: transform .6s cubic-bezier(.2,.7,.2,1);
+  filter: var(--bgReal);
+}
+
+#tint {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: soft-light;
+  transition: background .9s;
+  pointer-events: none;
+}
+
+#vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 45%, transparent 55%, rgba(20,18,22,.38) 100%),
+    linear-gradient(180deg, rgba(20,20,24,.22), transparent 18%, transparent 70%, rgba(20,20,24,.35));
+}
+
+/* Stage */
+#stage {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 1600px;
+  height: 900px;
+  transform-origin: 50% 50%;
+  transform: translate(-50%, -50%) scale(var(--s));
+}
+
+/* Model */
+#modelWrap {
+  position: absolute;
+  left: 800px;
+  top: 72px;
+  width: 440px;
+  height: 663px;
+  margin-left: -220px;
+  transform-origin: 50% 100%;
+  transition: transform 1s cubic-bezier(.65,0,.2,1);
+  pointer-events: none;
+}
+
+#modelWrap.full { transform: none; }
+#modelWrap.mid { transform: translateY(345px) scale(1.5); }
+#modelWrap.portrait { transform: translateY(940px) scale(2.4); }
+
+#shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 300px;
+  height: 34px;
+  margin-left: -150px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(30,28,26,.55), rgba(30,28,26,0));
+  filter: blur(4px);
+}
+
+#modelInner {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+  transform: translate3d(var(--mx), 0, 0) scaleX(var(--build)) scaleY(var(--height));
+  transition: transform .7s cubic-bezier(.2,.7,.2,1);
+}
+
+#breath {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+  animation: breath 5.5s ease-in-out infinite;
+}
+
+@keyframes breath {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.006); }
+}
+
+#figs {
+  position: absolute;
+  inset: 0;
+  filter: var(--gradeFilter);
+  transition: filter .9s ease;
+}
+
+.fig {
+  position: absolute;
+  inset: 0;
+  background: var(--img) center bottom / contain no-repeat;
+  filter: var(--real);
+  isolation: isolate;
+}
+
+.fig::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tintBg);
+  mix-blend-mode: soft-light;
+  -webkit-mask: var(--img) center bottom / contain no-repeat;
+  mask: var(--img) center bottom / contain no-repeat;
+  transition: background .9s;
+  pointer-events: none;
+}
+
+.fig.in {
+  clip-path: inset(0 0 100% 0);
+  animation: wipe 1.05s cubic-bezier(.7,0,.25,1) forwards;
+}
+
+@keyframes wipe {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+#scan {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  top: 0;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, #fff 25%, #fff 75%, transparent);
+  box-shadow: 0 0 22px 6px rgba(255,255,255,.55), 0 0 60px 18px rgba(214,226,255,.35);
+}
+
+#scan.go {
+  animation: scan 1.05s cubic-bezier(.7,0,.25,1) forwards;
+}
+
+@keyframes scan {
+  0% { top: 0; opacity: 1; }
+  92% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+#hotspots {
+  position: absolute;
+  inset: 0;
+  transition: opacity .35s ease;
+  pointer-events: none;
+}
+
+#modelWrap:not(.full) #hotspots {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hs {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.25);
+  border: 1px solid #fff;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: transform .25s ease;
+  pointer-events: auto;
+}
+
+#modelWrap:not(.full) .hs {
+  pointer-events: none;
+}
+
+.hs::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.85);
+  animation: ping 2.4s cubic-bezier(0,.4,.2,1) infinite;
+  pointer-events: none;
+}
+
+.hs::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+@keyframes ping {
+  0% { transform: scale(.6); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.hs:hover {
+  transform: scale(1.18);
+  z-index: 5;
+}
+
+.hs .tip {
+  position: absolute;
+  left: 34px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-6px);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: rgba(30,30,34,.55);
+  border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  font-size: 13px;
+  color: #fff;
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.hs:hover .tip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* Top bar */
+#logo {
+  position: absolute;
+  left: 30px;
+  top: 22px;
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+}
+
+#logo .wordmark {
+  font-family: Syne, sans-serif;
+  font-weight: 800;
+  font-size: 46px;
+  line-height: 1;
+  letter-spacing: -.02em;
+}
+
+#logo .sub {
+  font-size: 15px;
+  letter-spacing: .06em;
+  color: var(--ink-2);
+}
+
+#tabs {
+  left: 410px;
+  top: 22px;
+  width: 720px;
+  height: 54px;
+  border-radius: 30px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+
+#tabInd {
+  position: absolute;
+  top: 5px;
+  height: 44px;
+  border-radius: 24px;
+  transition: left .55s cubic-bezier(.7,0,.2,1), width .55s cubic-bezier(.7,0,.2,1);
+  pointer-events: none;
+}
+
+#tabs button {
+  flex: 1;
+  height: 44px;
+  border-radius: 24px;
+  font-size: 16px;
+  letter-spacing: .05em;
+  color: var(--ink-2);
+  position: relative;
+  z-index: 1;
+  transition: color .25s ease;
+}
+
+#tabs button:hover,
+#tabs button.on {
+  color: #fff;
+}
+
+#topIcons {
+  position: absolute;
+  right: 28px;
+  top: 24px;
+  display: flex;
+  gap: 12px;
+  z-index: 30;
+}
+
+.ticon.glass {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  transition: transform .2s ease, background .2s ease;
+}
+
+.ticon:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,.14);
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #fff;
+  color: #18171b;
+  font-size: 12px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  transform: scale(0);
+  transition: transform .35s cubic-bezier(.3,1.8,.5,1);
+  pointer-events: none;
+}
+
+.badge.on {
+  transform: scale(1);
+}
+
+.badge.bump {
+  animation: bump .35s ease;
+}
+
+@keyframes bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+
+#moreMenu {
+  right: 28px;
+  top: 84px;
+  width: 210px;
+  padding: 8px;
+  border-radius: 18px;
+  transform-origin: top right;
+  z-index: 40;
+  transform: scale(.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .25s cubic-bezier(.3,1.4,.5,1), opacity .2s ease;
+}
+
+#moreMenu.open {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#moreMenu button {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: var(--ink-2);
+  transition: background .2s, color .2s;
+}
+
+#moreMenu button:hover {
+  background: rgba(255,255,255,.12);
+  color: #fff;
+}
+
+/* Profile card */
+#profile {
+  left: 24px;
+  top: 96px;
+  width: 476px;
+  height: 124px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 16px;
+}
+
+#avatar {
+  width: 98px;
+  height: 98px;
+  flex: 0 0 98px;
+  border-radius: 18px;
+  border: 1.5px solid rgba(255,255,255,.85);
+  box-shadow: var(--glow);
+  background-repeat: no-repeat;
+}
+
+.pinfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.prow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#charName {
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.15;
+  border-radius: 8px;
+  padding: 2px 6px;
+  margin-left: -6px;
+  outline: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+#charName[contenteditable="true"] {
+  box-shadow: 0 0 0 1px #fff;
+  background: rgba(255,255,255,.14);
+  text-overflow: clip;
+}
+
+#btnEditName {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  transition: background .2s, color .2s;
+}
+
+#btnEditName:hover {
+  background: rgba(255,255,255,.12);
+  color: #fff;
+}
+
+#btnShuffle {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--glass-2);
+  border: 1px solid var(--line);
+  transition: transform .5s cubic-bezier(.3,1.4,.5,1), background .2s;
+}
+
+#btnShuffle:hover {
+  background: rgba(255,255,255,.18);
+}
+
+.pmeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  color: var(--ink-2);
+}
+
+.pmeta .sep {
+  width: 1px;
+  height: 16px;
+  background: var(--line);
+}
+
+#metaWeather {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#metaWeather .wtip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 9px;
+  background: rgba(28,28,32,.72);
+  border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  font-size: 12px;
+  color: #fff;
+  transition: opacity .2s, transform .2s;
+}
+
+#metaWeather:hover .wtip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Style menu + Randomize */
+#side {
+  left: 24px;
+  top: 236px;
+  width: 172px;
+  height: 470px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: transform .6s cubic-bezier(.7,0,.2,1);
+}
+
+#side.away {
+  transform: translateX(-240px);
+}
+
+#sideInd {
+  position: absolute;
+  left: 10px;
+  width: 152px;
+  height: 54px;
+  border-radius: 16px;
+  transition: top .45s cubic-bezier(.7,0,.2,1);
+  pointer-events: none;
+}
+
+#side button {
+  height: 54px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  font-size: 16px;
+  color: var(--ink-2);
+  position: relative;
+  z-index: 1;
+  transition: color .25s ease;
+}
+
+#side button:hover,
+#side button.on {
+  color: #fff;
+}
+
+#rand {
+  left: 24px;
+  top: 722px;
+  width: 220px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 16px;
+  transition: transform .6s cubic-bezier(.7,0,.2,1), background .2s ease;
+}
+
+#rand:hover {
+  background: rgba(255,255,255,.14);
+}
+
+#rand.away {
+  transform: translateX(-280px);
+}
+
+#rand svg {
+  transition: transform .8s cubic-bezier(.3,1.2,.4,1);
+}
+
+/* Right panel */
+#panel {
+  left: 1112px;
+  top: 96px;
+  width: 464px;
+  height: 680px;
+  padding: 22px 18px 18px;
+  overflow: hidden;
+}
+
+.view {
+  position: absolute;
+  inset: 22px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transform: translateX(30px);
+  pointer-events: none;
+  transition: transform .55s cubic-bezier(.7,0,.2,1), opacity .4s ease;
+}
+
+.view.on {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.vh {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex: 0 0 auto;
+}
+
+.vh h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.vh .note {
+  font-size: 12px;
+  color: var(--ink-3);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Outfits view */
+#cats {
+  display: flex;
+  justify-content: space-between;
+  flex: 0 0 auto;
+}
+
+.cat {
+  width: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-2);
+  transition: color .2s;
+}
+
+.cat .ctile {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--glass-2);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  transition: box-shadow .25s, background .25s, transform .2s;
+}
+
+.cat:hover .ctile {
+  transform: translateY(-2px);
+}
+
+.cat span {
+  font-size: 12px;
+}
+
+.cat.on {
+  color: #fff;
+}
+
+.cat.on .ctile {
+  box-shadow: var(--glow);
+  background: rgba(255,255,255,.16);
+}
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  height: 296px;
+  margin-top: 12px;
+  align-content: start;
+  flex: 0 0 auto;
+}
+
+.card {
+  position: relative;
+  height: 142px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.06));
+  overflow: hidden;
+  transition: transform .3s ease, opacity .3s ease, box-shadow .3s ease;
+}
+
+.card .im {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20%;
+  right: -20%;
+  background-position: center top;
+  background-size: auto 104%;
+  background-repeat: no-repeat;
+  transition: transform .4s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+
+.card:hover .im {
+  transform: scale(1.06);
+}
+
+.card .cname {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: rgba(24,24,28,.65);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-size: 11px;
+  text-align: center;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transform: translateY(calc(100% + 10px));
+  opacity: 0;
+  transition: transform .25s ease, opacity .25s ease;
+}
+
+.card:hover .cname {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.card.on {
+  box-shadow: var(--glow), 0 0 0 3px rgba(255,255,255,.25);
+}
+
+.card.roulette {
+  box-shadow: var(--glow);
+}
+
+.card .favb {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(24,24,28,.55);
+  display: grid;
+  place-items: center;
+  transform: scale(0);
+  opacity: 0;
+  transition: transform .35s cubic-bezier(.3,1.8,.5,1), opacity .2s ease;
+  pointer-events: none;
+}
+
+.card.fav .favb {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.card.out {
+  opacity: 0;
+  transform: scale(.85);
+  pointer-events: none;
+}
+
+.card.enter {
+  animation: cardEnter .5s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay: calc(var(--d, 0) * 45ms);
+}
+
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(14px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Accordion */
+#acc {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  max-height: 236px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+#acc::-webkit-scrollbar { display: none; }
+
+.arow {
+  flex: 0 0 auto;
+  border-radius: 12px;
+  background: var(--glass-2);
+  border: 1px solid var(--line);
+}
+
+.ahd {
+  width: 100%;
+  height: 40px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.ahd .acnt {
+  font-size: 12px;
+  color: var(--ink-3);
+  text-transform: none;
+  margin-left: 4px;
+}
+
+.ahd svg {
+  transition: transform .35s cubic-bezier(.7,0,.2,1);
+}
+
+.arow.open .ahd svg {
+  transform: rotate(180deg);
+}
+
+.abody {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .4s cubic-bezier(.7,0,.2,1);
+}
+
+.arow.open .abody {
+  grid-template-rows: 1fr;
+}
+
+.abody > div {
+  overflow: hidden;
+}
+
+.alist {
+  padding: 2px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--ink-3);
+  padding: 4px 0;
+}
+
+.pitem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+.pitem .pname {
+  font-weight: 500;
+  color: #fff;
+}
+
+.pitem .pcol {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-right: auto;
+}
+
+.pitem .pprice {
+  font-weight: 500;
+  color: #fff;
+}
+
+.pitem .padd {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.1);
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 1;
+  transition: all .2s;
+}
+
+.pitem .padd.in {
+  background: #fff;
+  color: #18171b;
+  border-color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Shared options & sliders */
+.sublbl {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: 10px;
+}
+
+.swatches {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.sw {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.35);
+  transition: box-shadow .2s, transform .2s;
+}
+
+.sw:hover { transform: scale(1.06); }
+.sw.on { box-shadow: 0 0 0 3px #fff, 0 0 16px rgba(255,255,255,.45); }
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.opt {
+  border-radius: 12px;
+  padding: 9px 14px;
+  font-size: 14px;
+  background: var(--glass-2);
+  border: 1px solid var(--line);
+  color: var(--ink-2);
+  transition: all .2s ease;
+}
+
+.opt:hover { color: #fff; }
+.opt.on {
+  color: #fff;
+  background: rgba(255,255,255,.16);
+  box-shadow: var(--glow);
+}
+
+.sl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sl-item .sl-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  font-size: 15px;
+}
+
+.sl-item .sl-row span:first-child { color: var(--ink-2); }
+.sl-item .sl-row b { font-weight: 600; color: #fff; }
+
+input[type="range"].sl {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fff var(--p, 50%), rgba(255,255,255,.28) var(--p, 50%));
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"].sl::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 5px rgba(255,255,255,.28), 0 0 14px rgba(255,255,255,.7);
+  cursor: pointer;
+}
+
+input[type="range"].sl::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 5px rgba(255,255,255,.28), 0 0 14px rgba(255,255,255,.7);
+  cursor: pointer;
+}
+
+/* DNA view */
+#helixWrap {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 18px;
+}
+
+.dna-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.dna-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 4px;
+  font-size: 15px;
+  border-bottom: 1px solid var(--line);
+}
+
+.dna-row:last-child { border-bottom: none; }
+.dna-row span { color: var(--ink-2); }
+.dna-row b { font-weight: 500; color: #fff; }
+
+.outline-btn {
+  width: 100%;
+  height: 46px;
+  border-radius: 14px;
+  border: 1.5px solid #fff;
+  font-size: 15px;
+  letter-spacing: .04em;
+  margin-top: auto;
+  transition: background .2s, color .2s;
+}
+
+.outline-btn:hover {
+  background: #fff;
+  color: #18171b;
+}
+
+/* Personality */
+#radarWrap {
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 10px;
+}
+
+/* Story */
+#storyBox {
+  background: var(--glass-2);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px;
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 220px;
+}
+
+#storyBox .caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: #fff;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: blink .8s step-end infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* Bottom controls */
+#ctrl {
+  left: 504px;
+  top: 742px;
+  width: 592px;
+  height: 54px;
+  border-radius: 18px;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+#ctrl button {
+  flex: 1;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: opacity .2s, box-shadow .25s, background .25s;
+}
+
+#ctrl button:hover:not(:disabled) {
+  background: rgba(255,255,255,.1);
+}
+
+#ctrl button:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+#real {
+  left: 24px;
+  top: 796px;
+  width: 452px;
+  height: 88px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+#real .rtop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 16px;
+}
+
+#real .rends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+#filt {
+  left: 494px;
+  top: 796px;
+  width: 640px;
+  height: 88px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fdrop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.fdrop .flbl {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+#filtBtn {
+  width: 156px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--glass-2);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+#filtBtn svg {
+  transition: transform .25s ease;
+}
+
+.fdrop.open #filtBtn svg {
+  transform: rotate(180deg);
+}
+
+#filtList {
+  left: 0;
+  bottom: 46px;
+  width: 156px;
+  padding: 6px;
+  border-radius: 14px;
+  z-index: 40;
+  opacity: 0;
+  transform: translateY(8px) scale(.96);
+  pointer-events: none;
+  transition: opacity .2s ease, transform .25s cubic-bezier(.3,1.4,.5,1);
+}
+
+.fdrop.open #filtList {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+#filtList button {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 9px;
+  text-align: left;
+  font-size: 14px;
+  color: var(--ink-2);
+  transition: background .15s, color .15s;
+}
+
+#filtList button:hover,
+#filtList button.on {
+  background: rgba(255,255,255,.14);
+  color: #fff;
+}
+
+#thumbsWrap {
+  flex: 1;
+  overflow: hidden;
+  padding: 4px 2px;
+}
+
+#thumbs {
+  display: flex;
+  gap: 10px;
+}
+
+#thumbs.nudge {
+  animation: nudge .35s cubic-bezier(.2,.7,.2,1);
+}
+
+@keyframes nudge {
+  from { transform: translateX(-14px); }
+  to { transform: translateX(0); }
+}
+
+.fthumb {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.fthumb:hover { transform: translateY(-3px); }
+.fthumb.on { box-shadow: var(--glow); }
+
+.fthumb .fimg {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+}
+
+.fthumb i {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+#thumbNext {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 50%;
+  background: var(--glass-2);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  transition: background .2s;
+}
+
+#thumbNext:hover {
+  background: rgba(255,255,255,.18);
+}
+
+/* Save button */
+#save {
+  left: 1302px;
+  top: 796px;
+  width: 274px;
+  height: 88px;
+  padding: 14px;
+}
+
+#btnSave {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+  border: 1.5px solid #fff;
+  font-size: 17px;
+  letter-spacing: .06em;
+  box-shadow: 0 0 18px rgba(255,255,255,.35), inset 0 0 14px rgba(255,255,255,.15);
+  transition: background .25s, color .25s;
+}
+
+#btnSave:hover {
+  background: #fff;
+  color: #18171b;
+}
+
+#btnSave .shine {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -40%;
+  width: 35%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent);
+  transform: skewX(-22deg);
+  pointer-events: none;
+}
+
+#btnSave.shining .shine {
+  animation: shine .9s cubic-bezier(.4,0,.2,1);
+}
+
+@keyframes shine {
+  from { left: -40%; }
+  to { left: 130%; }
+}
+
+/* Library drawer */
+#lib {
+  left: 504px;
+  top: 560px;
+  width: 592px;
+  height: 170px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  z-index: 35;
+  transform: translateY(20px) scale(.97);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .4s cubic-bezier(.7,0,.2,1), opacity .35s ease;
+}
+
+#lib.open {
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#libRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+#libRow::-webkit-scrollbar { display: none; }
+
+.scard {
+  position: relative;
+  width: 72px;
+  height: 104px;
+  flex: 0 0 72px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.06));
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.scard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow);
+}
+
+.scard .sim {
+  position: absolute;
+  inset: 0;
+  background-position: center bottom;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.scard.pop {
+  animation: popIn .35s cubic-bezier(.3,1.5,.5,1);
+}
+
+@keyframes popIn {
+  from { transform: scale(.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.flyer {
+  position: absolute;
+  z-index: 50;
+  pointer-events: none;
+  border-radius: 12px;
+  background-position: center bottom;
+  background-size: contain;
+  background-repeat: no-repeat;
+  transition: left .8s cubic-bezier(.7,0,.2,1), top .8s cubic-bezier(.7,0,.2,1), width .8s cubic-bezier(.7,0,.2,1), height .8s cubic-bezier(.7,0,.2,1), opacity .8s ease;
+}
+
+/* Toast */
+#toast {
+  left: 50%;
+  top: 96px;
+  transform: translateX(-50%) translateY(-20px);
+  opacity: 0;
+  pointer-events: none;
+  padding: 10px 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  z-index: 60;
+  transition: transform .35s cubic-bezier(.3,1.4,.5,1), opacity .25s ease;
+}
+
+#toast.on {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+</style>
+</head>
+<body>
+
+<div id="scene">
+  <div id="grade">
+    <div id="bg"></div>
+    <div id="tint"></div>
+  </div>
+  <div id="vignette"></div>
+</div>
+
+<div id="stage">
+  <div id="modelWrap" class="full">
+    <div id="shadow"></div>
+    <div id="modelInner">
+      <div id="breath">
+        <div id="figs"></div>
+        <div id="scan"></div>
+        <div id="hotspots"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logo -->
+  <div id="logo">
+    <div class="wordmark">VELL</div>
+    <div class="sub">CREATE A VELL</div>
+  </div>
+
+  <!-- Top tabs -->
+  <div id="tabs" class="glass">
+    <div id="tabInd" class="pill-on"></div>
+    <button data-tab="DNA">DNA</button>
+    <button data-tab="BODY">BODY</button>
+    <button data-tab="STYLE" class="on">STYLE</button>
+    <button data-tab="PERSONALITY">PERSONALITY</button>
+    <button data-tab="STORY">STORY</button>
+  </div>
+
+  <!-- Top-right icon buttons -->
+  <div id="topIcons">
+    <button id="btnCart" class="ticon glass" aria-label="Cart">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/>
+        <path d="M3 4h2l2.4 10.5a2 2 0 0 0 2 1.5h7.8a2 2 0 0 0 1.9-1.4L21 7H6"/>
+      </svg>
+      <span id="badgeCart" class="badge">0</span>
+    </button>
+    <button id="btnFav" class="ticon glass" aria-label="Favourites">
+      <svg id="heartIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 20.5s-7.5-4.7-9.5-9A5.4 5.4 0 0 1 12 6.2a5.4 5.4 0 0 1 9.5 5.3c-2 4.3-9.5 9-9.5 9Z"/>
+      </svg>
+      <span id="badgeFav" class="badge">0</span>
+    </button>
+    <button id="btnLib" class="ticon glass" aria-label="Library">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 8h12l1 12H5L6 8Z"/>
+        <path d="M9 8V6a3 3 0 0 1 6 0v2"/>
+      </svg>
+      <span id="badgeLib" class="badge">0</span>
+    </button>
+    <button id="btnMore" class="ticon glass" aria-label="More">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/>
+      </svg>
+    </button>
+  </div>
+
+  <div id="moreMenu" class="glass">
+    <button data-toast="Share link copied">Share look</button>
+    <button data-toast="Exported 4K render">Export render</button>
+    <button data-toast="Duplicated as new VELL">Duplicate</button>
+    <button data-toast="Settings saved">Settings</button>
+  </div>
+
+  <!-- Profile card -->
+  <div id="profile" class="glass">
+    <div id="avatar"></div>
+    <div class="pinfo">
+      <div class="prow">
+        <div id="charName" spellcheck="false">Han Seo-yeon</div>
+        <button id="btnEditName" aria-label="Edit name">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+          </svg>
+        </button>
+        <button id="btnShuffle" aria-label="Shuffle identity">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/>
+          </svg>
+        </button>
+      </div>
+      <div class="pmeta">
+        <span id="metaAge">23</span>
+        <span class="sep"></span>
+        <span id="metaCity">Seoul, KR</span>
+        <span class="sep"></span>
+        <div id="metaWeather">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a5 5 0 1 1 .9-9.9 6 6 0 0 1 11.4 2.4A3.8 3.8 0 0 1 17.5 19Z"/>
+          </svg>
+          <span id="metaTemp">14°C</span>
+          <span class="wtip">Overcast · soft daylight</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Style menu -->
+  <div id="side" class="glass">
+    <div id="sideInd" class="pill-on"></div>
+    <button data-side="Face">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r=".8" fill="currentColor"/><circle cx="15" cy="10" r=".8" fill="currentColor"/><path d="M9 15c.9.9 2 .9 3 .9s2.1 0 3-.9"/>
+      </svg>
+      <span>Face</span>
+    </button>
+    <button data-side="Hair">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 17c0-5 2-11 6-11s6 6 6 11"/><path d="M9 6a3 3 0 0 1 6 0"/><path d="M8 12c2 1 6 1 8 0"/>
+      </svg>
+      <span>Hair</span>
+    </button>
+    <button data-side="Makeup">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21V11h6v10"/><path d="M10 11V6l4-2v7"/><path d="M7 21h10"/>
+      </svg>
+      <span>Makeup</span>
+    </button>
+    <button data-side="Body">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="5" r="2.2"/><path d="M7 10h10l-1.5 5-1.5 6h-4l-1.5-6Z"/>
+      </svg>
+      <span>Body</span>
+    </button>
+    <button data-side="Outfits" class="on">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 6a2 2 0 1 0-2-2c0 1.5 2 2 2 3.5L4 15.5A1.5 1.5 0 0 0 5 18h14a1.5 1.5 0 0 0 1-2.5L12 7.5"/>
+      </svg>
+      <span>Outfits</span>
+    </button>
+    <button data-side="Accessories">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 9h12l-1.5 11h-9Z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/>
+      </svg>
+      <span>Accessories</span>
+    </button>
+    <button data-side="Tattoos">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m12 3 2.1 5.4L19.5 10l-5.4 2.1L12 17.5l-2.1-5.4L4.5 10l5.4-1.6Z"/>
+      </svg>
+      <span>Tattoos</span>
+    </button>
+    <button data-side="Details">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 7h16M4 12h16M4 17h16"/><circle cx="9" cy="7" r="2" fill="#262428"/><circle cx="15" cy="12" r="2" fill="#262428"/><circle cx="10" cy="17" r="2" fill="#262428"/>
+      </svg>
+      <span>Details</span>
+    </button>
+  </div>
+
+  <!-- Randomize -->
+  <button id="rand" class="glass">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12a9 9 0 0 0-15.5-6.3L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 15.5 6.3L21 16"/><path d="M21 21v-5h-5"/>
+    </svg>
+    <span>Randomize VELL</span>
+  </button>
+
+  <!-- Right panel -->
+  <div id="panel" class="glass">
+    <!-- 1. Outfits view -->
+    <div id="v-outfits" class="view on">
+      <div class="vh">
+        <h3>OUTFITS</h3>
+        <span id="lookCount" class="note">8 looks</span>
+      </div>
+      <div id="cats"></div>
+      <div id="grid"></div>
+      <div id="acc"></div>
+    </div>
+
+    <!-- 2. Tune view -->
+    <div id="v-tune" class="view">
+      <div class="vh">
+        <h3 id="tuneTitle">FACE</h3>
+        <span class="note">changes re-render the model</span>
+      </div>
+      <div id="tuneSwatches" class="swatches"></div>
+      <div id="tuneSub" class="sublbl" style="display:none">Add items</div>
+      <div id="tuneChips" class="chips"></div>
+      <div id="tuneSliders" class="sl-list"></div>
+    </div>
+
+    <!-- 3. DNA view -->
+    <div id="v-dna" class="view">
+      <div class="vh">
+        <h3>DNA</h3>
+        <span class="note">identity seed</span>
+      </div>
+      <div id="helixWrap">
+        <svg id="helix" width="300" height="120" viewBox="0 0 300 120"></svg>
+      </div>
+      <div class="dna-rows">
+        <div class="dna-row"><span>Seed</span><b id="dnaSeed">VL-0423-KR</b></div>
+        <div class="dna-row"><span>Heritage</span><b>Korean</b></div>
+        <div class="dna-row"><span>Age</span><b id="dnaAge">23</b></div>
+        <div class="dna-row"><span>Eye colour</span><b>Dark brown</b></div>
+        <div class="dna-row"><span>Hair</span><b>Black · high bun</b></div>
+      </div>
+      <button id="btnReseed" class="outline-btn">Re-seed identity</button>
+    </div>
+
+    <!-- 4. Body view -->
+    <div id="v-body" class="view">
+      <div class="vh">
+        <h3>BODY</h3>
+        <span class="note">proportions &amp; framing</span>
+      </div>
+      <div class="sl-list" style="margin-bottom:24px">
+        <div class="sl-item">
+          <div class="sl-row"><span>Height (cm)</span><b id="heightVal">168</b></div>
+          <input id="slHeight" class="sl" type="range" min="150" max="185" value="168">
+        </div>
+        <div class="sl-item">
+          <div class="sl-row"><span>Build</span><b id="buildVal">50</b></div>
+          <input id="slBuild" class="sl" type="range" min="0" max="100" value="50">
+        </div>
+      </div>
+      <div class="sublbl">Posture</div>
+      <div id="postureChips" class="chips">
+        <button class="opt on" data-posture="Relaxed">Relaxed</button>
+        <button class="opt" data-posture="Confident">Confident</button>
+        <button class="opt" data-posture="Editorial">Editorial</button>
+      </div>
+      <div class="sublbl">Framing</div>
+      <div id="framingChips" class="chips">
+        <button class="opt on" data-frame="full">Full body</button>
+        <button class="opt" data-frame="mid">Mid shot</button>
+        <button class="opt" data-frame="portrait">Portrait</button>
+      </div>
+    </div>
+
+    <!-- 5. Personality view -->
+    <div id="v-personality" class="view">
+      <div class="vh">
+        <h3>PERSONALITY</h3>
+        <span class="note">pick up to 3</span>
+      </div>
+      <div id="traitChips" class="chips" style="margin-bottom:10px"></div>
+      <div id="radarWrap">
+        <svg id="radar" width="250" height="210" viewBox="0 0 250 210"></svg>
+      </div>
+      <div class="sl-list" style="gap:14px">
+        <div class="sl-item">
+          <div class="sl-row"><span>Openness</span><b id="openVal">72</b></div>
+          <input id="slOpen" class="sl" type="range" min="30" max="94" value="72">
+        </div>
+        <div class="sl-item">
+          <div class="sl-row"><span>Energy</span><b id="energyVal">60</b></div>
+          <input id="slEnergy" class="sl" type="range" min="30" max="94" value="60">
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Story view -->
+    <div id="v-story" class="view">
+      <div class="vh">
+        <h3>STORY</h3>
+        <span class="note">auto-written from your choices</span>
+      </div>
+      <div id="storyBox"></div>
+      <button id="btnRewrite" class="outline-btn">Rewrite story</button>
+    </div>
+  </div>
+
+  <!-- Library drawer -->
+  <div id="lib" class="glass">
+    <div class="vh" style="margin-bottom:10px">
+      <h3>LIBRARY</h3>
+      <span id="libCount" class="note">0 saved</span>
+    </div>
+    <div id="libRow">
+      <span class="note" style="font-size:14px">Save a look to start your library.</span>
+    </div>
+  </div>
+
+  <!-- Control bar -->
+  <div id="ctrl" class="glass">
+    <button id="btnUndo" disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>
+      </svg>
+      <span>Undo</span>
+    </button>
+    <button id="btnRedo" disabled>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>
+      </svg>
+      <span>Redo</span>
+    </button>
+    <button id="btnPose" class="pill-on">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      <span id="poseLbl">Full</span>
+    </button>
+    <button id="btnReset">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>
+      </svg>
+      <span>Reset</span>
+    </button>
+  </div>
+
+  <!-- Realism -->
+  <div id="real" class="glass">
+    <div class="rtop">
+      <span>Realism</span>
+      <b id="realVal">75%</b>
+    </div>
+    <input id="slReal" class="sl" type="range" min="0" max="100" value="75">
+    <div class="rends">
+      <span>Stylized</span>
+      <span>Hyper Realistic</span>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div id="filt" class="glass">
+    <div id="fdrop" class="fdrop">
+      <span class="flbl">Filter</span>
+      <button id="filtBtn">
+        <span id="filtName">Daylight</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m6 9 6 6 6-6"/>
+        </svg>
+      </button>
+      <div id="filtList" class="glass"></div>
+    </div>
+    <div id="thumbsWrap">
+      <div id="thumbs"></div>
+    </div>
+    <button id="thumbNext" aria-label="Next filter">›</button>
+  </div>
+
+  <!-- Save -->
+  <div id="save" class="glass">
+    <button id="btnSave">SAVE TO LIBRARY<span class="shine"></span></button>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="glass">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 6 9 17l-5-5"/>
+    </svg>
+    <span id="toastMsg"></span>
+  </div>
+</div>
+
+<script>
+(() => {
+  const CDN = 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/';
+  const H = (file, w) => 'https://images.higgs.ai/?default=1&output=webp&url=' + encodeURIComponent(CDN + file) + '&w=' + w + '&q=85';
+
+  const BG_FILE = 'hf_20261112_034551_6394b127-5366-40a8-9c82-3c416f1161f1.png';
+
+  const LOOKS = [
+    {
+      name: 'Denim Maxi', cat: 'everyday',
+      file: 'hf_20261112_034542_a6430ecf-9862-412c-8ef6-5745115bd78c.png',
+      pieces: {
+        tops: [{ name: 'Ribbed crop tank', color: 'Charcoal', price: 38 }],
+        bottoms: [{ name: 'Washed denim maxi skirt', color: 'Light wash', price: 96 }],
+        full: [],
+        shoes: [{ name: 'Knee-high leather boots', color: 'Black', price: 210 }],
+        acc: [{ name: 'Leather belt', color: 'Black', price: 42 }, { name: 'Gold hoops', color: '14k', price: 64 }]
+      }
+    },
+    {
+      name: 'Cloud Set', cat: 'everyday',
+      file: 'hf_20261112_034738_73282737-acc8-41e9-a822-96c663e27b6c.png',
+      pieces: {
+        tops: [{ name: 'Half-zip sweatshirt', color: 'Oat', price: 74 }],
+        bottoms: [{ name: 'Wide sweatpants', color: 'Oat', price: 68 }],
+        full: [],
+        shoes: [{ name: 'Chunky sneakers', color: 'White', price: 120 }],
+        acc: [{ name: 'Gold hoops', color: '14k', price: 64 }]
+      }
+    },
+    {
+      name: 'Library Knit', cat: 'everyday',
+      file: 'hf_20261112_034742_9a8a92fd-79ae-4163-9ffa-14ae2a68717f.png',
+      pieces: {
+        tops: [{ name: 'Cable-knit cardigan', color: 'Cream', price: 112 }, { name: 'Cotton tee', color: 'White', price: 24 }],
+        bottoms: [{ name: 'Pleated wide trousers', color: 'Heather grey', price: 98 }],
+        full: [],
+        shoes: [{ name: 'Penny loafers', color: 'Brown', price: 150 }],
+        acc: []
+      }
+    },
+    {
+      name: 'Lilac Run', cat: 'athletic',
+      file: 'hf_20261112_034735_4e352e03-ad2b-44d1-9fcf-4b5b9454dc55.png',
+      pieces: {
+        tops: [{ name: 'Zip training jacket', color: 'Lilac', price: 88 }, { name: 'Sports crop top', color: 'Lilac', price: 44 }],
+        bottoms: [{ name: 'High-rise leggings', color: 'Lilac', price: 72 }],
+        full: [],
+        shoes: [{ name: 'Running sneakers', color: 'White', price: 140 }],
+        acc: []
+      }
+    },
+    {
+      name: 'Satin Night', cat: 'sleep',
+      file: 'hf_20261112_034738_aeb8ea57-6399-4f3c-b54a-4a57d0bd971e.png',
+      pieces: {
+        tops: [{ name: 'Satin pyjama shirt', color: 'Powder blue', price: 66 }],
+        bottoms: [{ name: 'Satin pyjama trousers', color: 'Powder blue', price: 58 }],
+        full: [],
+        shoes: [{ name: 'Fluffy slippers', color: 'Ivory', price: 34 }],
+        acc: []
+      }
+    },
+    {
+      name: 'Night Suit', cat: 'formal',
+      file: 'hf_20261112_034736_aace5c5f-8c14-4b00-83ba-744dbad2e337.png',
+      pieces: {
+        tops: [{ name: 'Oversized blazer', color: 'Black', price: 240 }, { name: 'Silk camisole', color: 'Ivory', price: 82 }],
+        bottoms: [{ name: 'Straight suit trousers', color: 'Black', price: 160 }],
+        full: [],
+        shoes: [{ name: 'Pointed heels', color: 'Black', price: 190 }],
+        acc: []
+      }
+    },
+    {
+      name: 'Sage Slip', cat: 'party',
+      file: 'hf_20261112_034735_3d9fb69e-b4e0-49f7-a2d4-e592bd616c27.png',
+      pieces: {
+        tops: [],
+        bottoms: [],
+        full: [{ name: 'Satin slip midi dress', color: 'Sage', price: 180 }],
+        shoes: [{ name: 'Strappy sandals', color: 'Silver', price: 130 }],
+        acc: [{ name: 'Fine chain necklace', color: 'Silver', price: 56 }]
+      }
+    },
+    {
+      name: 'Bomber Cargo', cat: 'street',
+      file: 'hf_20261112_034740_3e3c5ad7-689b-46a2-8e09-c7d36a569b9c.png',
+      pieces: {
+        tops: [{ name: 'Leather bomber', color: 'Black', price: 260 }, { name: 'Crop tee', color: 'White', price: 22 }],
+        bottoms: [{ name: 'Parachute cargo pants', color: 'Khaki', price: 94 }],
+        full: [],
+        shoes: [{ name: 'Platform sneakers', color: 'Black', price: 150 }],
+        acc: []
+      }
+    }
+  ];
+
+  const FILTERS = [
+    { name: 'Daylight',    f: 'none',                                          t: 'transparent' },
+    { name: 'Soft Film',   f: 'contrast(.92) saturate(.85) brightness(1.06)',  t: 'linear-gradient(180deg, rgba(255,226,214,.35), rgba(180,200,220,.35))' },
+    { name: 'Cool Studio', f: 'saturate(.9) brightness(1.06) contrast(1.04)',  t: 'linear-gradient(180deg, rgba(150,190,255,.55), rgba(200,220,255,.3))' },
+    { name: 'Blue Hour',   f: 'brightness(.82) contrast(1.1) saturate(1.1)',   t: 'linear-gradient(180deg, rgba(70,60,170,.75), rgba(150,90,170,.55))' },
+    { name: 'Mono',        f: 'grayscale(1) contrast(1.12) brightness(1.03)',  t: 'transparent' },
+    { name: 'Golden Hour', f: 'saturate(1.1) brightness(1.02)',                t: 'linear-gradient(180deg, rgba(255,180,90,.6), rgba(255,140,80,.4))' }
+  ];
+
+  const IDENTITIES = [
+    { name: 'Han Seo-yeon', age: 23, city: 'Seoul, KR',   temp: '14°C' },
+    { name: 'Kim Ha-eun',   age: 22, city: 'Busan, KR',   temp: '17°C' },
+    { name: 'Yoon Ji-woo',  age: 25, city: 'Seoul, KR',   temp: '12°C' },
+    { name: 'Park Min-ji',  age: 24, city: 'Incheon, KR', temp: '13°C' },
+    { name: 'Lee Soo-ah',   age: 21, city: 'Daegu, KR',   temp: '15°C' }
+  ];
+
+  const CATS = [
+    { id: 'all',      label: 'All',      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>' },
+    { id: 'everyday', label: 'Everyday', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 5 4 8l2 4 2-1v9h8v-9l2 1 2-4-4-3a4 4 0 0 1-8 0Z"/></svg>' },
+    { id: 'athletic', label: 'Athletic', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M13 3 5 14h6l-1 7 9-11h-6Z"/></svg>' },
+    { id: 'sleep',    label: 'Sleep',    svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z"/></svg>' },
+    { id: 'formal',   label: 'Formal',   svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 4h8l2 6v10H6V10Z"/><path d="M9 4l3 6 3-6"/></svg>' },
+    { id: 'party',    label: 'Party',    svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M9 4v4l-4 12h14L15 8V4"/><path d="M9 8h6"/></svg>' },
+    { id: 'street',   label: 'Street',   svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M8 6a4 4 0 0 1 8 0l4 4-2 3-2-1v8H8v-8l-2 1-2-3Z"/><path d="M9 9h6"/></svg>' }
+  ];
+
+  const ACC_GROUPS = [
+    { id: 'tops',    label: 'TOPS' },
+    { id: 'bottoms', label: 'BOTTOMS' },
+    { id: 'full',    label: 'FULL BODY' },
+    { id: 'shoes',   label: 'SHOES' },
+    { id: 'acc',     label: 'ACCESSORIES' }
+  ];
+
+  const HOTSPOT_POS = {
+    tops:    [60, 24],
+    full:    [60, 38],
+    bottoms: [38, 47],
+    shoes:   [40, 95],
+    acc:     [56, 14]
+  };
+
+  const TUNE_CFG = {
+    Face: {
+      presets: ['Soft', 'Defined', 'Natural', 'Sculpted'],
+      defPreset: 'Natural',
+      sliders: [
+        { k: 'smile', label: 'Smile', val: 35 },
+        { k: 'jawline', label: 'Jawline', val: 50 },
+        { k: 'freckles', label: 'Freckles', val: 10 }
+      ]
+    },
+    Hair: {
+      swatches: ['#14110f', '#3b2a20', '#6b4a35', '#a07c5a', '#d9c3a1'],
+      defSwatch: 0,
+      presets: ['High bun', 'Low bun', 'Long straight', 'Bob', 'Ponytail'],
+      defPreset: 'High bun',
+      sliders: [
+        { k: 'volume', label: 'Volume', val: 60 },
+        { k: 'shine', label: 'Shine', val: 70 }
+      ]
+    },
+    Makeup: {
+      swatches: ['#e8b4a8', '#d98c8c', '#b5525e', '#8e3c4a'],
+      defSwatch: 0,
+      presets: ['No-makeup', 'Glass skin', 'Soft glam', 'Editorial'],
+      defPreset: 'No-makeup',
+      sliders: [
+        { k: 'blush', label: 'Blush', val: 30 },
+        { k: 'lipTint', label: 'Lip tint', val: 45 },
+        { k: 'glow', label: 'Glow', val: 55 }
+      ]
+    },
+    Accessories: {
+      multi: true,
+      presets: ['Gold hoops', 'Silver chain', 'Shoulder bag', 'Sunglasses', 'Watch', 'Hair clip'],
+      defMulti: ['Gold hoops'],
+      sliders: []
+    },
+    Tattoos: {
+      presets: ['None', 'Fine line', 'Floral', 'Script', 'Minimal dots'],
+      defPreset: 'None',
+      sliders: [
+        { k: 'opacity', label: 'Opacity', val: 40 }
+      ]
+    },
+    Details: {
+      presets: ['Studio', 'Natural', 'Cinematic'],
+      defPreset: 'Natural',
+      sliders: [
+        { k: 'skinTexture', label: 'Skin texture', val: 70 },
+        { k: 'fabricDetail', label: 'Fabric detail', val: 80 },
+        { k: 'lightingSoftness', label: 'Lighting softness', val: 60 }
+      ]
+    }
+  };
+
+  const TRAITS = ['Curious', 'Bold', 'Calm', 'Witty', 'Romantic', 'Driven', 'Playful', 'Gentle', 'Creative', 'Loyal'];
+  const AXES = ['Openness', 'Energy', 'Warmth', 'Focus', 'Humour'];
+  const FRAMES = ['full', 'mid', 'portrait'];
+  const FRAME_LABELS = { full: 'Full', mid: 'Mid', portrait: 'Portrait' };
+
+  // Preload all 8 w=1000 images
+  const IMGS = LOOKS.map(l => {
+    const img = new Image();
+    img.src = H(l.file, 1000);
+    return img;
+  });
+
+  // Set background image
+  const bgEl = document.getElementById('bg');
+  bgEl.style.backgroundImage = `url("${H(BG_FILE, 2400)}")`;
+
+  // State
+  let S = { look: 0, grade: 0, real: 75, height: 168, build: 50 };
+  let hist = [{ ...S }];
+  let histIdx = 0;
+
+  let activeTab = 'STYLE';
+  let activeSide = 'Outfits';
+  let activeCat = 'all';
+  let openAcc = null;
+  let framing = 'full';
+  let posture = 'Relaxed';
+  let thumbOffset = 0;
+  let idIdx = 0;
+  let dnaSeed = 'VL-0423-KR';
+  let shuffleRot = 0;
+  let randRot = 0;
+  let lookToken = 0;
+
+  const favs = new Set();
+  const cart = new Set();
+  const library = [];
+
+  // Tune state per item
+  const tuneState = {};
+  for (const [key, cfg] of Object.entries(TUNE_CFG)) {
+    tuneState[key] = {
+      swatch: cfg.defSwatch ?? 0,
+      preset: cfg.defPreset ?? '',
+      multi: new Set(cfg.defMulti || []),
+      sliders: Object.fromEntries(cfg.sliders.map(s => [s.k, s.val]))
+    };
+  }
+
+  let selectedTraits = ['Curious', 'Creative', 'Gentle'];
+  let radarVals = [72, 60, 74, 64, 58];
+
+  // Helpers
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+
+  function setSliderProgress(el) {
+    const min = Number(el.min || 0);
+    const max = Number(el.max || 100);
+    const val = Number(el.value);
+    const pct = ((val - min) / (max - min)) * 100;
+    el.style.setProperty('--p', pct + '%');
+  }
+
+  let toastTimer = null;
+  function toast(msg) {
+    $('toastMsg').textContent = msg;
+    const t = $('toast');
+    t.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('on'), 1800);
+  }
+
+  function updateBadge(el, count) {
+    const prev = Number(el.textContent);
+    el.textContent = String(count);
+    el.classList.toggle('on', count > 0);
+    if (count > 0 && count !== prev) {
+      el.classList.remove('bump');
+      void el.offsetWidth;
+      el.classList.add('bump');
+    }
+  }
+
+  function faceBgStyle(file, sizePx) {
+    const k = sizePx / 360;
+    return {
+      image: `url("${H(file, 1000)}")`,
+      size: `${(1360 * k).toFixed(2)}px ${(2048 * k).toFixed(2)}px`,
+      pos: `${(-500 * k).toFixed(2)}px ${(-46 * k).toFixed(2)}px`
+    };
+  }
+
+  function applyAvatar() {
+    const f = faceBgStyle(LOOKS[S.look].file, 98);
+    const av = $('avatar');
+    av.style.backgroundImage = f.image;
+    av.style.backgroundSize = f.size;
+    av.style.backgroundPosition = f.pos;
+  }
+
+  function applyRealism(v) {
+    S.real = v;
+    $('slReal').value = v;
+    $('realVal').textContent = v + '%';
+    setSliderProgress($('slReal'));
+    const k = Math.max(0, (80 - v) / 80);
+    if (k === 0) {
+      root.style.setProperty('--real', 'none');
+      root.style.setProperty('--bgReal', 'none');
+    } else {
+      root.style.setProperty('--real', `saturate(${(1 + k * 0.9).toFixed(3)}) contrast(${(1 + k * 0.25).toFixed(3)}) blur(${(k * 1.4).toFixed(2)}px) brightness(${(1 + k * 0.05).toFixed(3)})`);
+      root.style.setProperty('--bgReal', `blur(${(k * 5).toFixed(2)}px) saturate(${(1 + k * 0.5).toFixed(3)})`);
+    }
+  }
+
+  function applyBody(h, b) {
+    S.height = h;
+    S.build = b;
+    $('slHeight').value = h;
+    $('heightVal').textContent = String(h);
+    setSliderProgress($('slHeight'));
+    $('slBuild').value = b;
+    $('buildVal').textContent = String(b);
+    setSliderProgress($('slBuild'));
+    root.style.setProperty('--height', (1 + (h - 168) / 168 * 0.9).toFixed(4));
+    root.style.setProperty('--build', (1 + (b - 50) / 50 * 0.07).toFixed(4));
+  }
+
+  function applyFilter(g) {
+    S.grade = g;
+    const flt = FILTERS[g];
+    $('grade').style.filter = flt.f;
+    $('tint').style.background = flt.t;
+    root.style.setProperty('--gradeFilter', flt.f);
+    root.style.setProperty('--tintBg', flt.t);
+    $('filtName').textContent = flt.name;
+    document.querySelectorAll('#filtList button').forEach((btn, idx) => {
+      btn.classList.toggle('on', idx === g);
+    });
+    renderThumbs();
+  }
+
+  function applyFraming(f) {
+    framing = f;
+    const mw = $('modelWrap');
+    mw.className = f;
+    $('poseLbl').textContent = FRAME_LABELS[f];
+    document.querySelectorAll('#framingChips .opt').forEach(btn => {
+      btn.classList.toggle('on', btn.dataset.frame === f);
+    });
+  }
+
+  function rescan() {
+    const s = $('scan');
+    s.classList.remove('go');
+    void s.offsetWidth;
+    s.classList.add('go');
+  }
+
+  function addInitialLook(i) {
+    const figs = $('figs');
+    figs.innerHTML = '';
+    const d = document.createElement('div');
+    d.className = 'fig';
+    d.style.setProperty('--img', `url("${H(LOOKS[i].file, 1000)}")`);
+    figs.appendChild(d);
+    S.look = i;
+    updateGridActive();
+    applyAvatar();
+    renderThumbs();
+    renderAcc();
+    renderHotspots();
+    updateFavButton();
+  }
+
+  async function showLook(i) {
+    const token = ++lookToken;
+    S.look = i;
+    updateGridActive();
+    try {
+      await IMGS[i].decode();
+    } catch (_) {
+      // Fallback if already decoded or browser decode rejects
+    }
+    if (token !== lookToken) return;
+
+    const figs = $('figs');
+    const fig = document.createElement('div');
+    fig.className = 'fig in';
+    fig.style.setProperty('--img', `url("${H(LOOKS[i].file, 1000)}")`);
+    figs.appendChild(fig);
+
+    rescan();
+
+    fig.addEventListener('animationend', () => {
+      while (figs.children.length > 1 && figs.firstElementChild !== fig) {
+        figs.removeChild(figs.firstElementChild);
+      }
+      fig.classList.remove('in');
+    }, { once: true });
+
+    applyAvatar();
+    renderThumbs();
+    renderAcc();
+    renderHotspots();
+    updateFavButton();
+  }
+
+  function updateGridActive() {
+    document.querySelectorAll('#grid .card').forEach(c => {
+      c.classList.toggle('on', Number(c.dataset.idx) === S.look);
+    });
+  }
+
+  function updateFavButton() {
+    const isFav = favs.has(S.look);
+    $('heartIcon').setAttribute('fill', isFav ? 'currentColor' : 'none');
+    updateBadge($('badgeFav'), favs.size);
+    document.querySelectorAll('#grid .card').forEach(c => {
+      c.classList.toggle('fav', favs.has(Number(c.dataset.idx)));
+    });
+  }
+
+  function toggleFav(i) {
+    if (favs.has(i)) {
+      favs.delete(i);
+      toast('Removed from favourites');
+    } else {
+      favs.add(i);
+      toast('Added to favourites');
+    }
+    updateFavButton();
+  }
+
+  function commit() {
+    hist = hist.slice(0, histIdx + 1);
+    hist.push({ ...S });
+    histIdx = hist.length - 1;
+    updateUndoRedo();
+  }
+
+  function updateUndoRedo() {
+    $('btnUndo').disabled = histIdx <= 0;
+    $('btnRedo').disabled = histIdx >= hist.length - 1;
+  }
+
+  function applySnapshot(snap) {
+    const prevLook = S.look;
+    applyFilter(snap.grade);
+    applyRealism(snap.real);
+    applyBody(snap.height, snap.build);
+    if (snap.look !== prevLook) {
+      showLook(snap.look);
+    } else {
+      S.look = snap.look;
+      updateGridActive();
+      applyAvatar();
+      renderThumbs();
+    }
+    updateUndoRedo();
+  }
+
+  function pickLook(i) {
+    if (i === S.look) return;
+    showLook(i);
+    commit();
+  }
+
+  // Stage scale & parallax
+  function updateScale() {
+    const s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    root.style.setProperty('--s', s.toFixed(5));
+  }
+
+  window.addEventListener('resize', updateScale);
+  window.addEventListener('pointermove', e => {
+    const x = e.clientX / window.innerWidth - 0.5;
+    const y = e.clientY / window.innerHeight - 0.5;
+    root.style.setProperty('--bx', (-x * 22).toFixed(2) + 'px');
+    root.style.setProperty('--by', (-y * 12).toFixed(2) + 'px');
+    root.style.setProperty('--mx', (x * 10).toFixed(2) + 'px');
+  });
+
+  // Top tabs & indicators
+  function positionIndicators() {
+    const activeTabBtn = document.querySelector('#tabs button.on');
+    if (activeTabBtn) {
+      $('tabInd').style.left = activeTabBtn.offsetLeft + 'px';
+      $('tabInd').style.width = activeTabBtn.offsetWidth + 'px';
+    }
+    const activeSideBtn = document.querySelector('#side button.on');
+    if (activeSideBtn) {
+      $('sideInd').style.top = activeSideBtn.offsetTop + 'px';
+    }
+  }
+
+  function showView(id) {
+    document.querySelectorAll('#panel .view').forEach(v => {
+      v.classList.toggle('on', v.id === id);
+    });
+  }
+
+  function switchTab(tabName) {
+    activeTab = tabName;
+    document.querySelectorAll('#tabs button').forEach(b => {
+      b.classList.toggle('on', b.dataset.tab === tabName);
+    });
+    positionIndicators();
+
+    const isStyle = tabName === 'STYLE';
+    $('side').classList.toggle('away', !isStyle);
+    $('rand').classList.toggle('away', !isStyle);
+
+    if (tabName === 'DNA') {
+      showView('v-dna');
+    } else if (tabName === 'BODY') {
+      showView('v-body');
+    } else if (tabName === 'PERSONALITY') {
+      showView('v-personality');
+    } else if (tabName === 'STORY') {
+      showView('v-story');
+      typeStory();
+    } else {
+      if (activeSide === 'Outfits') showView('v-outfits');
+      else if (activeSide === 'Body') showView('v-body');
+      else {
+        renderTune(activeSide);
+        showView('v-tune');
+      }
+    }
+  }
+
+  document.querySelectorAll('#tabs button').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  // Side menu
+  document.querySelectorAll('#side button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeSide = btn.dataset.side;
+      document.querySelectorAll('#side button').forEach(b => b.classList.toggle('on', b === btn));
+      positionIndicators();
+      if (activeSide === 'Outfits') {
+        showView('v-outfits');
+      } else if (activeSide === 'Body') {
+        showView('v-body');
+      } else {
+        renderTune(activeSide);
+        showView('v-tune');
+      }
+    });
+  });
+
+  // Category chips & Grid
+  function renderCats() {
+    const wrap = $('cats');
+    wrap.innerHTML = CATS.map(c => `
+      <button class="cat ${c.id === activeCat ? 'on' : ''}" data-cat="${c.id}">
+        <span class="ctile">${c.svg}</span>
+        <span>${c.label}</span>
+      </button>
+    `).join('');
+    wrap.querySelectorAll('.cat').forEach(btn => {
+      btn.addEventListener('click', () => filterCategory(btn.dataset.cat));
+    });
+  }
+
+  function buildGrid() {
+    const grid = $('grid');
+    grid.innerHTML = LOOKS.map((l, i) => `
+      <button class="card ${i === S.look ? 'on' : ''}" data-idx="${i}" data-cat="${l.cat}">
+        <div class="im" style="background-image:url('${H(l.file, 360)}')"></div>
+        <div class="cname">${l.name}</div>
+        <div class="favb">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#fff" stroke="#fff" stroke-width="1.6">
+            <path d="M12 20.5s-7.5-4.7-9.5-9A5.4 5.4 0 0 1 12 6.2a5.4 5.4 0 0 1 9.5 5.3c-2 4.3-9.5 9-9.5 9Z"/>
+          </svg>
+        </div>
+      </button>
+    `).join('');
+
+    grid.querySelectorAll('.card').forEach(card => {
+      const idx = Number(card.dataset.idx);
+      card.addEventListener('click', () => pickLook(idx));
+      card.addEventListener('dblclick', e => {
+        e.preventDefault();
+        toggleFav(idx);
+      });
+    });
+  }
+
+  let filterTimer = null;
+  function filterCategory(cat) {
+    if (cat === activeCat) return;
+    activeCat = cat;
+    document.querySelectorAll('#cats .cat').forEach(c => {
+      c.classList.toggle('on', c.dataset.cat === cat);
+    });
+
+    const cards = Array.from(document.querySelectorAll('#grid .card'));
+    clearTimeout(filterTimer);
+
+    const matching = [];
+    cards.forEach(card => {
+      const match = cat === 'all' || card.dataset.cat === cat;
+      card.classList.remove('enter');
+      if (!match) {
+        if (card.style.display !== 'none') {
+          card.classList.add('out');
+        }
+      } else {
+        matching.push(card);
+      }
+    });
+
+    $('lookCount').textContent = `${matching.length} ${matching.length === 1 ? 'look' : 'looks'}`;
+
+    filterTimer = setTimeout(() => {
+      cards.forEach(card => {
+        const match = cat === 'all' || card.dataset.cat === cat;
+        if (!match) {
+          card.style.display = 'none';
+          card.classList.remove('out');
+        }
+      });
+      matching.forEach((card, idx) => {
+        card.style.display = '';
+        card.classList.remove('out');
+        card.style.setProperty('--d', idx);
+        void card.offsetWidth;
+        card.classList.add('enter');
+      });
+    }, 300);
+  }
+
+  // Accordion
+  function renderAcc() {
+    const look = LOOKS[S.look];
+    const acc = $('acc');
+    acc.innerHTML = ACC_GROUPS.map(g => {
+      const items = look.pieces[g.id] || [];
+      const isOpen = openAcc === g.id;
+      const bodyHtml = items.length === 0
+        ? `<div class="empty">Nothing in this look</div>`
+        : items.map((p, idx) => {
+            const key = `${S.look}:${g.id}:${idx}`;
+            const inCart = cart.has(key);
+            return `
+              <div class="pitem">
+                <span class="pname">${p.name}</span>
+                <span class="pcol">${p.color}</span>
+                <span class="pprice">$${p.price}</span>
+                <button class="padd ${inCart ? 'in' : ''}" data-key="${key}">${inCart ? '✓' : '+'}</button>
+              </div>
+            `;
+          }).join('');
+
+      return `
+        <div class="arow ${isOpen ? 'open' : ''}" data-group="${g.id}">
+          <button class="ahd">
+            <span>${g.label}<span class="acnt"> · ${items.length}</span></span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m6 9 6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="abody"><div><div class="alist">${bodyHtml}</div></div></div>
+        </div>
+      `;
+    }).join('');
+
+    acc.querySelectorAll('.ahd').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const grp = btn.parentElement.dataset.group;
+        openAcc = openAcc === grp ? null : grp;
+        acc.querySelectorAll('.arow').forEach(r => {
+          r.classList.toggle('open', r.dataset.group === openAcc);
+        });
+      });
+    });
+
+    acc.querySelectorAll('.padd').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const key = btn.dataset.key;
+        if (cart.has(key)) {
+          cart.delete(key);
+          btn.classList.remove('in');
+          btn.textContent = '+';
+          toast('Removed from cart');
+        } else {
+          cart.add(key);
+          btn.classList.add('in');
+          btn.textContent = '✓';
+          toast('Added to cart');
+        }
+        updateBadge($('badgeCart'), cart.size);
+      });
+    });
+  }
+
+  // Hotspots
+  function renderHotspots() {
+    const look = LOOKS[S.look];
+    const hsWrap = $('hotspots');
+    const html = [];
+    for (const [grp, coords] of Object.entries(HOTSPOT_POS)) {
+      const items = look.pieces[grp] || [];
+      if (!items.length) continue;
+      const p = items[0];
+      html.push(`
+        <button class="hs" data-group="${grp}" style="left:${coords[0]}%;top:${coords[1]}%">
+          <span class="tip"><strong>${p.name}</strong> · ${p.color} · $${p.price}</span>
+        </button>
+      `);
+    }
+    hsWrap.innerHTML = html.join('');
+    hsWrap.querySelectorAll('.hs').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const grp = btn.dataset.group;
+        openAcc = grp;
+        if (activeTab !== 'STYLE') switchTab('STYLE');
+        if (activeSide !== 'Outfits') {
+          activeSide = 'Outfits';
+          document.querySelectorAll('#side button').forEach(b => b.classList.toggle('on', b.dataset.side === 'Outfits'));
+          positionIndicators();
+          showView('v-outfits');
+        }
+        renderAcc();
+      });
+    });
+  }
+
+  // Tune view
+  function renderTune(item) {
+    const cfg = TUNE_CFG[item];
+    const st = tuneState[item];
+    $('tuneTitle').textContent = item.toUpperCase();
+
+    const swWrap = $('tuneSwatches');
+    if (cfg.swatches) {
+      swWrap.style.display = 'flex';
+      swWrap.innerHTML = cfg.swatches.map((col, idx) => `
+        <button class="sw ${st.swatch === idx ? 'on' : ''}" data-idx="${idx}" style="background:${col}"></button>
+      `).join('');
+      swWrap.querySelectorAll('.sw').forEach(btn => {
+        btn.addEventListener('click', () => {
+          st.swatch = Number(btn.dataset.idx);
+          swWrap.querySelectorAll('.sw').forEach((b, i) => b.classList.toggle('on', i === st.swatch));
+          rescan();
+        });
+      });
+    } else {
+      swWrap.style.display = 'none';
+      swWrap.innerHTML = '';
+    }
+
+    $('tuneSub').style.display = cfg.multi ? 'block' : 'none';
+
+    const chWrap = $('tuneChips');
+    chWrap.innerHTML = cfg.presets.map(p => {
+      const on = cfg.multi ? st.multi.has(p) : st.preset === p;
+      return `<button class="opt ${on ? 'on' : ''}" data-p="${p}">${p}</button>`;
+    }).join('');
+
+    chWrap.querySelectorAll('.opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = btn.dataset.p;
+        if (cfg.multi) {
+          if (st.multi.has(p)) st.multi.delete(p);
+          else st.multi.add(p);
+          btn.classList.toggle('on', st.multi.has(p));
+        } else {
+          st.preset = p;
+          chWrap.querySelectorAll('.opt').forEach(b => b.classList.toggle('on', b === btn));
+        }
+        rescan();
+        toast(`${item}: ${p}`);
+      });
+    });
+
+    const slWrap = $('tuneSliders');
+    slWrap.innerHTML = cfg.sliders.map(s => `
+      <div class="sl-item">
+        <div class="sl-row"><span>${s.label}</span><b>${st.sliders[s.k]}</b></div>
+        <input class="sl" type="range" min="0" max="100" value="${st.sliders[s.k]}" data-k="${s.k}">
+      </div>
+    `).join('');
+
+    slWrap.querySelectorAll('input.sl').forEach(inp => {
+      setSliderProgress(inp);
+      inp.addEventListener('input', () => {
+        const v = Number(inp.value);
+        st.sliders[inp.dataset.k] = v;
+        inp.previousElementSibling.querySelector('b').textContent = String(v);
+        setSliderProgress(inp);
+      });
+      inp.addEventListener('change', () => rescan());
+    });
+  }
+
+  // DNA Helix animation
+  let helixT = 0;
+  function animateHelix() {
+    const svg = $('helix');
+    if (svg) {
+      let out = '';
+      for (let i = 0; i < 26; i++) {
+        const x = 12.5 + i * 11;
+        const angle = i * 0.42 + helixT;
+        const s = Math.sin(angle);
+        const c = Math.cos(angle);
+        const d1 = (c + 1) / 2;
+        const d2 = 1 - d1;
+        const y1 = 60 + s * 38;
+        const y2 = 60 - s * 38;
+        const rungA = (0.15 + d1 * 0.25).toFixed(3);
+        const r1 = (2 + d1 * 2.4).toFixed(2);
+        const a1 = (0.4 + d1 * 0.6).toFixed(3);
+        const r2 = (2 + d2 * 2.4).toFixed(2);
+        const a2 = (0.4 + d2 * 0.6).toFixed(3);
+        out += `<line x1="${x}" y1="${y1.toFixed(1)}" x2="${x}" y2="${y2.toFixed(1)}" stroke="rgba(255,255,255,${rungA})" stroke-width="1"/>`;
+        if (d1 < d2) {
+          out += `<circle cx="${x}" cy="${y1.toFixed(1)}" r="${r1}" fill="rgba(255,255,255,${a1})"/>`;
+          out += `<circle cx="${x}" cy="${y2.toFixed(1)}" r="${r2}" fill="rgba(255,255,255,${a2})"/>`;
+        } else {
+          out += `<circle cx="${x}" cy="${y2.toFixed(1)}" r="${r2}" fill="rgba(255,255,255,${a2})"/>`;
+          out += `<circle cx="${x}" cy="${y1.toFixed(1)}" r="${r1}" fill="rgba(255,255,255,${a1})"/>`;
+        }
+      }
+      svg.innerHTML = out;
+    }
+    helixT += 0.03;
+    requestAnimationFrame(animateHelix);
+  }
+  requestAnimationFrame(animateHelix);
+
+  // Profile editing & shuffling
+  const charName = $('charName');
+  let editingName = false;
+
+  function setEditingName(on) {
+    editingName = on;
+    if (on) {
+      charName.setAttribute('contenteditable', 'true');
+      charName.focus();
+      const range = document.createRange();
+      range.selectNodeContents(charName);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      charName.removeAttribute('contenteditable');
+      const cleaned = charName.textContent.trim();
+      if (!cleaned) charName.textContent = IDENTITIES[idIdx].name;
+      else charName.textContent = cleaned;
+      toast('Name updated');
+    }
+  }
+
+  $('btnEditName').addEventListener('click', () => setEditingName(!editingName));
+  charName.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      setEditingName(false);
+    }
+  });
+  charName.addEventListener('blur', () => {
+    if (editingName) setEditingName(false);
+  });
+
+  let scrambleTimer = null;
+  function shuffleIdentity(withRescan = false) {
+    shuffleRot += 180;
+    $('btnShuffle').style.transform = `rotate(${shuffleRot}deg)`;
+    idIdx = (idIdx + 1) % IDENTITIES.length;
+    const target = IDENTITIES[idIdx];
+
+    $('metaAge').textContent = String(target.age);
+    $('metaCity').textContent = target.city;
+    $('metaTemp').textContent = target.temp;
+
+    dnaSeed = `VL-0${400 + idIdx * 37}-KR`;
+    $('dnaSeed').textContent = dnaSeed;
+    $('dnaAge').textContent = String(target.age);
+
+    clearInterval(scrambleTimer);
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    let frame = 0;
+    const totalFrames = 14;
+    scrambleTimer = setInterval(() => {
+      frame++;
+      if (frame >= totalFrames) {
+        clearInterval(scrambleTimer);
+        charName.textContent = target.name;
+        if (activeTab === 'STORY') typeStory();
+        return;
+      }
+      const reveal = Math.floor((frame / totalFrames) * target.name.length);
+      let s = '';
+      for (let i = 0; i < target.name.length; i++) {
+        if (i < reveal || target.name[i] === ' ' || target.name[i] === '-') {
+          s += target.name[i];
+        } else {
+          s += chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
+      charName.textContent = s;
+    }, 30);
+
+    if (withRescan) rescan();
+  }
+
+  $('btnShuffle').addEventListener('click', () => shuffleIdentity(false));
+  $('btnReseed').addEventListener('click', () => {
+    shuffleIdentity(true);
+    toast('Identity re-seeded');
+  });
+
+  // Body view
+  $('slHeight').addEventListener('input', e => applyBody(Number(e.target.value), S.build));
+  $('slHeight').addEventListener('change', () => commit());
+  $('slBuild').addEventListener('input', e => applyBody(S.height, Number(e.target.value)));
+  $('slBuild').addEventListener('change', () => commit());
+
+  document.querySelectorAll('#postureChips .opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      posture = btn.dataset.posture;
+      document.querySelectorAll('#postureChips .opt').forEach(b => b.classList.toggle('on', b === btn));
+      rescan();
+      toast(`Posture: ${posture}`);
+    });
+  });
+
+  document.querySelectorAll('#framingChips .opt').forEach(btn => {
+    btn.addEventListener('click', () => applyFraming(btn.dataset.frame));
+  });
+
+  // Personality & Radar
+  function computeRadarFromTraits(traits) {
+    const out = [0, 0, 0, 0, 0];
+    for (let a = 0; a < 5; a++) {
+      let sum = 13 + a * 19;
+      for (const t of traits) {
+        for (let i = 0; i < t.length; i++) {
+          sum = (sum * 31 + t.charCodeAt(i) * (a + 3) + i * 7) % 10000;
+        }
+      }
+      out[a] = 30 + (sum % 65); // 30..94
+    }
+    radarVals = out;
+    $('slOpen').value = radarVals[0];
+    $('openVal').textContent = String(radarVals[0]);
+    setSliderProgress($('slOpen'));
+    $('slEnergy').value = radarVals[1];
+    $('energyVal').textContent = String(radarVals[1]);
+    setSliderProgress($('slEnergy'));
+    renderRadar();
+  }
+
+  function renderRadar() {
+    const svg = $('radar');
+    const cx = 125, cy = 108, R = 78;
+    let html = '';
+
+    // 4 concentric pentagons
+    for (let ring = 1; ring <= 4; ring++) {
+      const r = (R * ring) / 4;
+      const pts = [];
+      for (let a = 0; a < 5; a++) {
+        const ang = -Math.PI / 2 + (a * 2 * Math.PI) / 5;
+        pts.push(`${(cx + Math.cos(ang) * r).toFixed(1)},${(cy + Math.sin(ang) * r).toFixed(1)}`);
+      }
+      html += `<polygon points="${pts.join(' ')}" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="1"/>`;
+    }
+
+    // Axes & labels
+    for (let a = 0; a < 5; a++) {
+      const ang = -Math.PI / 2 + (a * 2 * Math.PI) / 5;
+      const x = cx + Math.cos(ang) * R;
+      const y = cy + Math.sin(ang) * R;
+      html += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,.16)" stroke-width="1"/>`;
+      const lx = cx + Math.cos(ang) * (R + 16);
+      const ly = cy + Math.sin(ang) * (R + 14) + 3;
+      const anchor = Math.abs(Math.cos(ang)) < 0.2 ? 'middle' : (Math.cos(ang) > 0 ? 'start' : 'end');
+      html += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" fill="rgba(255,255,255,.78)" font-size="11" font-family="Figtree,sans-serif">${AXES[a]}</text>`;
+    }
+
+    // Value polygon
+    const vpts = radarVals.map((val, a) => {
+      const ang = -Math.PI / 2 + (a * 2 * Math.PI) / 5;
+      const r = (val / 100) * R;
+      return `${(cx + Math.cos(ang) * r).toFixed(1)},${(cy + Math.sin(ang) * r).toFixed(1)}`;
+    });
+    html += `<polygon points="${vpts.join(' ')}" fill="rgba(255,255,255,.28)" stroke="#fff" stroke-width="1.5"/>`;
+
+    svg.innerHTML = html;
+  }
+
+  function renderTraits() {
+    const wrap = $('traitChips');
+    wrap.innerHTML = TRAITS.map(t => `
+      <button class="opt ${selectedTraits.includes(t) ? 'on' : ''}" data-t="${t}">${t}</button>
+    `).join('');
+    wrap.querySelectorAll('.opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.t;
+        const idx = selectedTraits.indexOf(t);
+        if (idx !== -1) {
+          if (selectedTraits.length > 1) selectedTraits.splice(idx, 1);
+        } else {
+          if (selectedTraits.length >= 3) selectedTraits.shift();
+          selectedTraits.push(t);
+        }
+        wrap.querySelectorAll('.opt').forEach(b => b.classList.toggle('on', selectedTraits.includes(b.dataset.t)));
+        computeRadarFromTraits(selectedTraits);
+      });
+    });
+  }
+
+  $('slOpen').addEventListener('input', e => {
+    radarVals[0] = Number(e.target.value);
+    $('openVal').textContent = String(radarVals[0]);
+    setSliderProgress(e.target);
+    renderRadar();
+  });
+
+  $('slEnergy').addEventListener('input', e => {
+    radarVals[1] = Number(e.target.value);
+    $('energyVal').textContent = String(radarVals[1]);
+    setSliderProgress(e.target);
+    renderRadar();
+  });
+
+  // Story view
+  let typeTimer = null;
+  function buildStoryText() {
+    const name = charName.textContent.trim() || IDENTITIES[idIdx].name;
+    const city = $('metaCity').textContent.trim();
+    const lookName = LOOKS[S.look].name.toLowerCase();
+    const pool = [...selectedTraits];
+    for (const t of TRAITS) {
+      if (pool.length >= 3) break;
+      if (!pool.includes(t)) pool.push(t);
+    }
+    const [t1, t2, t3] = pool.map(t => t.toLowerCase());
+    return `${name} is ${S.height} cm of ${t1} energy from ${city}. Mornings start with a long walk along the river in her ${lookName} look; friends call her ${t2} and a little ${t3}. She collects film cameras, keeps a sketchbook of strangers' outfits, and is saving for a studio of her own.`;
+  }
+
+  function typeStory() {
+    clearInterval(typeTimer);
+    const full = buildStoryText();
+    const box = $('storyBox');
+    let pos = 0;
+    box.innerHTML = '<span class="caret"></span>';
+    typeTimer = setInterval(() => {
+      pos = Math.min(full.length, pos + 2);
+      box.innerHTML = full.slice(0, pos) + '<span class="caret"></span>';
+      if (pos >= full.length) clearInterval(typeTimer);
+    }, 22);
+  }
+
+  $('btnRewrite').addEventListener('click', () => {
+    const shuffled = [...TRAITS].sort(() => Math.random() - 0.5);
+    selectedTraits = shuffled.slice(0, 3);
+    renderTraits();
+    computeRadarFromTraits(selectedTraits);
+    typeStory();
+  });
+
+  // Realism
+  $('slReal').addEventListener('input', e => applyRealism(Number(e.target.value)));
+  $('slReal').addEventListener('change', () => commit());
+
+  // Filter dropdown & thumbnails
+  function buildFilterMenu() {
+    $('filtList').innerHTML = FILTERS.map((f, idx) => `
+      <button class="${idx === S.grade ? 'on' : ''}" data-g="${idx}">${f.name}</button>
+    `).join('');
+    $('filtList').querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const g = Number(btn.dataset.g);
+        $('fdrop').classList.remove('open');
+        if (g !== S.grade) {
+          applyFilter(g);
+          commit();
+        }
+      });
+    });
+  }
+
+  function renderThumbs() {
+    const face = faceBgStyle(LOOKS[S.look].file, 64);
+    const wrap = $('thumbs');
+    let html = '';
+    for (let k = 0; k < 5; k++) {
+      const idx = (thumbOffset + k) % FILTERS.length;
+      const flt = FILTERS[idx];
+      html += `
+        <button class="fthumb ${idx === S.grade ? 'on' : ''}" data-g="${idx}" title="${flt.name}">
+          <div class="fimg" style="background-image:${face.image};background-size:${face.size};background-position:${face.pos};filter:${flt.f}"></div>
+          <i style="background:${flt.t}"></i>
+        </button>
+      `;
+    }
+    wrap.innerHTML = html;
+    wrap.querySelectorAll('.fthumb').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const g = Number(btn.dataset.g);
+        if (g !== S.grade) {
+          applyFilter(g);
+          commit();
+        }
+      });
+    });
+  }
+
+  $('filtBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    $('fdrop').classList.toggle('open');
+  });
+
+  $('thumbNext').addEventListener('click', () => {
+    thumbOffset = (thumbOffset + 1) % FILTERS.length;
+    renderThumbs();
+    const t = $('thumbs');
+    t.classList.remove('nudge');
+    void t.offsetWidth;
+    t.classList.add('nudge');
+  });
+
+  // Control bar: Undo / Redo / Pose / Reset
+  $('btnUndo').addEventListener('click', () => {
+    if (histIdx <= 0) return;
+    histIdx--;
+    applySnapshot(hist[histIdx]);
+  });
+
+  $('btnRedo').addEventListener('click', () => {
+    if (histIdx >= hist.length - 1) return;
+    histIdx++;
+    applySnapshot(hist[histIdx]);
+  });
+
+  $('btnPose').addEventListener('click', () => {
+    const next = FRAMES[(FRAMES.indexOf(framing) + 1) % FRAMES.length];
+    applyFraming(next);
+  });
+
+  $('btnReset').addEventListener('click', () => {
+    const def = { look: 0, grade: 0, real: 75, height: 168, build: 50 };
+    applyFraming('full');
+    applySnapshot(def);
+    commit();
+    toast('Reset to default');
+  });
+
+  // Keyboard shortcuts
+  window.addEventListener('keydown', e => {
+    if (editingName) return;
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        if (histIdx < hist.length - 1) {
+          histIdx++;
+          applySnapshot(hist[histIdx]);
+        }
+      } else {
+        if (histIdx > 0) {
+          histIdx--;
+          applySnapshot(hist[histIdx]);
+        }
+      }
+      return;
+    }
+    if (e.target && e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      pickLook((S.look + LOOKS.length - 1) % LOOKS.length);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      pickLook((S.look + 1) % LOOKS.length);
+    }
+  });
+
+  // Top-right icons & More menu
+  $('btnFav').addEventListener('click', () => toggleFav(S.look));
+
+  $('btnCart').addEventListener('click', () => {
+    toast(cart.size ? `${cart.size} piece${cart.size === 1 ? '' : 's'} in cart` : 'Cart is empty');
+  });
+
+  $('btnLib').addEventListener('click', e => {
+    e.stopPropagation();
+    $('lib').classList.toggle('open');
+  });
+
+  $('btnMore').addEventListener('click', e => {
+    e.stopPropagation();
+    $('moreMenu').classList.toggle('open');
+  });
+
+  document.querySelectorAll('#moreMenu button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $('moreMenu').classList.remove('open');
+      toast(btn.dataset.toast);
+    });
+  });
+
+  document.addEventListener('click', e => {
+    if (!$('moreMenu').contains(e.target) && e.target !== $('btnMore')) {
+      $('moreMenu').classList.remove('open');
+    }
+    if (!$('fdrop').contains(e.target)) {
+      $('fdrop').classList.remove('open');
+    }
+    const lib = $('lib');
+    if (lib.classList.contains('open') && !lib.contains(e.target) && !$('btnLib').contains(e.target) && !$('btnSave').contains(e.target)) {
+      lib.classList.remove('open');
+    }
+  });
+
+  // Save to library + flyer animation
+  function renderLibrary(popLast = false) {
+    $('libCount').textContent = `${library.length} saved`;
+    const row = $('libRow');
+    if (library.length === 0) {
+      row.innerHTML = `<span class="note" style="font-size:14px">Save a look to start your library.</span>`;
+      return;
+    }
+    row.innerHTML = library.map((item, idx) => `
+      <button class="scard ${popLast && idx === library.length - 1 ? 'pop' : ''}" data-idx="${idx}" title="${LOOKS[item.look].name}">
+        <div class="sim" style="background-image:url('${H(LOOKS[item.look].file, 360)}');filter:${FILTERS[item.grade].f}"></div>
+      </button>
+    `).join('');
+
+    row.querySelectorAll('.scard').forEach(card => {
+      card.addEventListener('click', () => {
+        const item = library[Number(card.dataset.idx)];
+        applySnapshot(item);
+        commit();
+        toast(`Loaded ${LOOKS[item.look].name}`);
+      });
+    });
+  }
+
+  $('btnSave').addEventListener('click', () => {
+    const btn = $('btnSave');
+    btn.classList.remove('shining');
+    void btn.offsetWidth;
+    btn.classList.add('shining');
+
+    $('lib').classList.add('open');
+
+    const scale = parseFloat(getComputedStyle(root).getPropertyValue('--s')) || 1;
+    const stageRect = $('stage').getBoundingClientRect();
+    const mwRect = $('modelWrap').getBoundingClientRect();
+
+    const mwLeft = (mwRect.left - stageRect.left) / scale;
+    const mwTop = (mwRect.top - stageRect.top) / scale;
+    const mwW = mwRect.width / scale;
+    const mwH = mwRect.height / scale;
+
+    const startLeft = mwLeft + mwW * 0.25;
+    const startW = mwW * 0.5;
+    const startTop = mwTop;
+    const startH = mwH;
+
+    // Target next 72x104 slot inside #libRow using final #lib stage coordinates (504, 560)
+    const libRow = $('libRow');
+    const existingSlots = library.length;
+    const targetLeft = 504 + libRow.offsetLeft + existingSlots * 82 - libRow.scrollLeft;
+    const targetTop = 560 + libRow.offsetTop + (libRow.clientHeight - 104) / 2;
+
+    const flyer = document.createElement('div');
+    flyer.className = 'flyer';
+    flyer.style.left = startLeft + 'px';
+    flyer.style.top = startTop + 'px';
+    flyer.style.width = startW + 'px';
+    flyer.style.height = startH + 'px';
+    flyer.style.backgroundImage = `url("${H(LOOKS[S.look].file, 1000)}")`;
+    flyer.style.filter = FILTERS[S.grade].f;
+    $('stage').appendChild(flyer);
+
+    void flyer.offsetWidth;
+    flyer.style.left = targetLeft + 'px';
+    flyer.style.top = targetTop + 'px';
+    flyer.style.width = '72px';
+    flyer.style.height = '104px';
+
+    const snapshot = { ...S };
+    setTimeout(() => {
+      flyer.remove();
+      library.push(snapshot);
+      renderLibrary(true);
+      updateBadge($('badgeLib'), library.length);
+      toast('Saved to library');
+    }, 860);
+  });
+
+  // Randomize VELL
+  let randRunning = false;
+  $('rand').addEventListener('click', () => {
+    if (randRunning) return;
+    randRunning = true;
+    randRot += 360;
+    $('rand').querySelector('svg').style.transform = `rotate(${randRot}deg)`;
+
+    let visibleCards = Array.from(document.querySelectorAll('#grid .card')).filter(c => c.style.display !== 'none');
+    if (visibleCards.length < 2) {
+      activeCat = 'all';
+      renderCats();
+      document.querySelectorAll('#grid .card').forEach(c => {
+        c.style.display = '';
+        c.classList.remove('out');
+      });
+      visibleCards = Array.from(document.querySelectorAll('#grid .card'));
+      $('lookCount').textContent = `${visibleCards.length} looks`;
+    }
+
+    let step = 0;
+    let delay = 50;
+    function nextRoulette() {
+      visibleCards.forEach(c => c.classList.remove('roulette'));
+      const pick = visibleCards[step % visibleCards.length];
+      pick.classList.add('roulette');
+      step++;
+      if (step < 12) {
+        delay += 8;
+        setTimeout(nextRoulette, delay);
+      } else {
+        setTimeout(() => {
+          visibleCards.forEach(c => c.classList.remove('roulette'));
+          const candidates = LOOKS.map((_, i) => i).filter(i => i !== S.look);
+          const nextLook = candidates[Math.floor(Math.random() * candidates.length)];
+          const nextGrade = Math.floor(Math.random() * 4);
+          const nextReal = 55 + Math.floor(Math.random() * 45);
+          applyFilter(nextGrade);
+          applyRealism(nextReal);
+          showLook(nextLook);
+          commit();
+          randRunning = false;
+        }, delay);
+      }
+    }
+    nextRoulette();
+  });
+
+  // Initial mount
+  updateScale();
+  renderCats();
+  buildGrid();
+  buildFilterMenu();
+  renderTraits();
+  computeRadarFromTraits(selectedTraits);
+  applyFilter(0);
+  applyRealism(75);
+  applyBody(168, 50);
+  applyFraming('full');
+  addInitialLook(0);
+  updateUndoRedo();
+  positionIndicators();
+
+  window.addEventListener('load', positionIndicators);
+})();
+</script>
+</body>
+</html>

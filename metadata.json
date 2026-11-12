@@ -1,0 +1,6 @@
+{
+  "name": "VELL — Create a Character",
+  "description": "A full-screen virtual-character styling studio for creating and styling VELL characters.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
